@@ -2,7 +2,7 @@ param([switch]$Offline)
 $ErrorActionPreference = 'Stop'
 $projectDir = Split-Path $PSScriptRoot -Parent
 $cacheDir = Join-Path $projectDir '.cache'
-$outputDir = Join-Path $projectDir 'dist\LightMark-1.0.2'
+$outputDir = Join-Path $projectDir 'app'
 $compiler = Join-Path $env:WINDIR 'Microsoft.NET\Framework64\v4.0.30319\csc.exe'
 $frameworkDir = Split-Path $compiler -Parent
 New-Item -ItemType Directory -Path $cacheDir, $outputDir -Force | Out-Null

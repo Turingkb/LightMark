@@ -8,7 +8,7 @@ $sampleText = Get-Content (Join-Path $projectDir 'Welcome.md') -Raw
 $results = @()
 foreach ($run in 1..3) {
     $startInfo = [Diagnostics.ProcessStartInfo]::new()
-    $startInfo.FileName = Join-Path $projectDir 'dist\LightMark-1.0.2\LightMark.exe'
+    $startInfo.FileName = Join-Path $projectDir 'app\LightMark.exe'
     $startInfo.Arguments = '"' + $fixture + '"'
     $startInfo.UseShellExecute = $false
     $startInfo.WindowStyle = [Diagnostics.ProcessWindowStyle]::Hidden

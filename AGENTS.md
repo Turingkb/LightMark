@@ -8,5 +8,7 @@ Windows 原生轻量 Markdown 编辑器，C# 5 / .NET Framework 4.8 / WPF。使�
 - 原始 Markdown 不得作为 XAML/HTML 执行。远程图片不自动加载；链接仅允许明确点击的 http/https、页内锚点和本地 Markdown。
 - 保存必须保留编码、BOM 和换行风格；通过同目录临时文件原子替换；外部修改必须先提示，不得静默覆盖。
 - 不改写 Windows UserChoice。注册仅作用于当前用户，默认应用通过系统界面由用户选择。
-- `build/`、`dist/`、`.cache/` 是生成物，不提交。依赖来源、版本和校验值以 `dependencies.json` 为准。
+- `app/` 仅保留最新版便携程序，是固定的日常使用入口；`build/` 存测试、测量和最新压缩包；`.cache/` 缓存依赖。三者均不提交。
+- 历史版本交给 Git 管理，不创建或保留 1.0.1、1.0.2 等版本号目录及旧压缩包。
+- 依赖来源、版本和校验值以 `dependencies.json` 为准。
 - 使用 software-project-lifecycle、code-writing-standards、software-testing-strategy 和 git-repository-workflow；仓库规则优先。

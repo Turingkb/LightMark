@@ -1,10 +1,17 @@
 # LightMark
 
-轻量 Windows Markdown 编辑器，使用 C# / WPF 原生控件、Markdig 解析。无浏览器进程、无服务端、无遥测。Windows 10/11，需系统 .NET Framework 4.8。当前 1.0.2 版的 `dist/LightMark-1.0.2/LightMark.exe` 内嵌全部解析依赖，可独立复制运行。
+轻量 Windows Markdown 编辑器，使用 C# / WPF 原生控件、Markdig 解析。无浏览器进程、无服务端、无遥测。Windows 10/11，需系统 .NET Framework 4.8。当前 1.0.2 版的 `app/LightMark.exe` 内嵌全部解析依赖，可独立复制运行。
+
+## 文件位置
+
+- `app/LightMark.exe`：日常使用的固定入口，仅保留最新版。
+- `src/`、`tests/`、`scripts/`：源码、测试、构建工具。
+- `build/`：测试与测量结果；`build/package/LightMark-portable.zip` 是最新便携包。
+- `.cache/`：可复用的依赖下载缓存。历史版本由 Git 管理，本地不保留版本号目录和旧安装包。
 
 ## 运行与默认打开方式
 
-双击 `dist/LightMark-1.0.2/LightMark.exe`，或运行 `LightMark.exe "D:\笔记\我的文档.md"`。打开文件、最近文档和使用指南时默认仅阅读，编辑区及格式工具隐藏；点击右上角“编辑”或“分栏”再修改。主动新建文档、恢复草稿会显示编辑区。
+双击 `app/LightMark.exe`，或运行 `LightMark.exe "D:\笔记\我的文档.md"`。打开文件、最近文档和使用指南时默认仅阅读，编辑区及格式工具隐藏；点击右上角“编辑”或“分栏”再修改。主动新建文档、恢复草稿会显示编辑区。
 
 左侧为可折叠的树形目录，以 H1–H6 标记、缩进、字号和字重区分层级；标题缺级时挂在最近的上级标题下。支持拖入文件、目录跳转、查找替换、常用格式快捷键和列表续写。当前查找定位在源码中，找到时会切换到分栏。
 
@@ -39,9 +46,9 @@
 ./scripts/measure.ps1        # 三次窗口启动与内存测量
 ```
 
-`src/` 是应用，`tests/` 是测试，`scripts/` 是构建和验证入口。依赖精确版本、官方包 SHA-256 与许可证记录于 `dependencies.json`。生成物位于 `dist/`，测试输出位于 `build/`，均不纳入 Git。Markdig 负责语法解析，WPF 渲染层不依赖第三方 HTML/浏览器控件。
+`src/` 是应用，`tests/` 是测试，`scripts/` 是构建和验证入口。依赖精确版本、官方包 SHA-256 与许可证记录于 `dependencies.json`。最新版程序位于 `app/`，测试输出位于 `build/`，均不纳入 Git。Markdig 负责语法解析，WPF 渲染层不依赖第三方 HTML/浏览器控件。
 
-源码仓库：[Turingkb/LightMark](https://github.com/Turingkb/LightMark)（私有）。本地项目已配置提交身份，使用 main 分支同步。构建信息与 EXE SHA-256 写到 `dist/LightMark-1.0.2/build-info.json`。测试与实际性能记录见 `VALIDATION.md`。
+源码仓库：[Turingkb/LightMark](https://github.com/Turingkb/LightMark)（私有）。本地项目已配置提交身份，使用 main 分支同步。构建信息与 EXE SHA-256 写到 `app/build-info.json`。测试与实际性能记录见 `VALIDATION.md`。
 
 ## 当前未完成的部分
 

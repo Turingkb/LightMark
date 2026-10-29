@@ -28,4 +28,4 @@
 
 ## 交付状态
 
-`dist/LightMark-1.0.2/LightMark.exe` 是嵌入解析依赖的便携程序，发行目录含使用说明、第三方声明、注销关联脚本和构建 SHA-256。1.0.0 程序仍保留在原目录，未强制关闭用户窗口。项目已使用提供的身份完成本地提交，并创建私有 GitHub 仓库 https://github.com/Turingkb/LightMark，首次源码已推送。
+`app/LightMark.exe` 是嵌入解析依赖的便携程序，发行目录含使用说明、第三方声明、注销关联脚本和构建 SHA-256。本地仅保留最新版程序和最新压缩包，旧版目录已由 Git 历史替代。项目已使用提供的身份完成本地提交，并创建私有 GitHub 仓库 https://github.com/Turingkb/LightMark，首次源码已推送。
