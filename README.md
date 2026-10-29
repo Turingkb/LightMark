@@ -1,12 +1,14 @@
 # LightMark
 
-轻量 Windows Markdown 编辑器，使用 C# / WPF 原生控件、Markdig 解析。无浏览器进程、无服务端、无遥测。Windows 10/11，需系统 .NET Framework 4.8。当前 1.0.1 版的 `dist/LightMark-1.0.1/LightMark.exe` 内嵌全部解析依赖，可独立复制运行。
+轻量 Windows Markdown 编辑器，使用 C# / WPF 原生控件、Markdig 解析。无浏览器进程、无服务端、无遥测。Windows 10/11，需系统 .NET Framework 4.8。当前 1.0.2 版的 `dist/LightMark-1.0.2/LightMark.exe` 内嵌全部解析依赖，可独立复制运行。
 
 ## 运行与默认打开方式
 
-双击 `dist/LightMark-1.0.1/LightMark.exe`，或运行 `LightMark.exe "D:\笔记\我的文档.md"`。打开文件、最近文档和使用指南时默认仅阅读，编辑区及格式工具隐藏；点击右上角“编辑”或“分栏”再修改。主动新建文档、恢复草稿会显示编辑区。
+双击 `dist/LightMark-1.0.2/LightMark.exe`，或运行 `LightMark.exe "D:\笔记\我的文档.md"`。打开文件、最近文档和使用指南时默认仅阅读，编辑区及格式工具隐藏；点击右上角“编辑”或“分栏”再修改。主动新建文档、恢复草稿会显示编辑区。
 
 左侧为可折叠的树形目录，以 H1–H6 标记、缩进、字号和字重区分层级；标题缺级时挂在最近的上级标题下。支持拖入文件、目录跳转、查找替换、常用格式快捷键和列表续写。当前查找定位在源码中，找到时会切换到分栏。
+
+1.0.2 起在创建窗口前设置固定任务栏应用标识 `Turingkb.LightMark`，多个文档窗口可合并到同一任务栏图标组。最终显示方式遵循 Windows 的任务栏合并设置。升级后先关闭旧版窗口，再打开新版；如果曾固定旧版图标，需要取消固定并重新固定新版。[Windows 应用标识接口](https://learn.microsoft.com/en-us/windows/win32/api/shobjidl_core/nf-shobjidl_core-setcurrentprocessexplicitappusermodelid)。
 
 将 EXE 放到长期保留的目录，选择 **文件 → 注册为 Markdown 打开方式**。然后在 Windows 默认应用设置里搜索 `.md`，选择 LightMark；也可右键 Markdown 文件 → 打开方式 → 选择其他应用 → 找到 `LightMark.exe` → 始终。`.markdown`、`.mdown`、`.mkd` 可单独设置。
 
@@ -39,7 +41,7 @@
 
 `src/` 是应用，`tests/` 是测试，`scripts/` 是构建和验证入口。依赖精确版本、官方包 SHA-256 与许可证记录于 `dependencies.json`。生成物位于 `dist/`，测试输出位于 `build/`，均不纳入 Git。Markdig 负责语法解析，WPF 渲染层不依赖第三方 HTML/浏览器控件。
 
-源码按本地 Git 管理；未配置远程。构建信息与 EXE SHA-256 写到 `dist/LightMark-1.0.1/build-info.json`。测试与实际性能记录见 `VALIDATION.md`。
+源码仓库：[Turingkb/LightMark](https://github.com/Turingkb/LightMark)（私有）。本地项目已配置提交身份，使用 main 分支同步。构建信息与 EXE SHA-256 写到 `dist/LightMark-1.0.2/build-info.json`。测试与实际性能记录见 `VALIDATION.md`。
 
 ## 当前未完成的部分
 
@@ -49,4 +51,3 @@
 - **阅读体验待增强**：直接在预览中查找并高亮（目前定位源码）、目录随滚动自动高亮、目录折叠状态记忆。基本阅读和手动目录导航已可用。
 - **可选扩展未实现**：代码语法高亮、数学公式、Mermaid、脚注专用排版，以及打印/PDF 导出、多标签页、主题切换。
 - **大文档仍有限制**：最大打开 8 MB，预览前 150,000 字符并限制节点数量。完整源码仍可保存。
-- **源码版本记录待补**：本地仓库已初始化，因未配置 Git 提交身份尚未形成提交；未建立远程仓库。

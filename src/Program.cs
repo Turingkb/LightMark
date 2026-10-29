@@ -6,8 +6,8 @@ using System.Windows;
 
 [assembly: AssemblyTitle("LightMark")]
 [assembly: AssemblyDescription("轻量 Markdown 编辑器")]
-[assembly: AssemblyVersion("1.0.1.0")]
-[assembly: AssemblyFileVersion("1.0.1.0")]
+[assembly: AssemblyVersion("1.0.2.0")]
+[assembly: AssemblyFileVersion("1.0.2.0")]
 
 namespace LightMark
 {
@@ -37,6 +37,7 @@ namespace LightMark
         [MethodImpl(MethodImplOptions.NoInlining)]
         private static void Run(string[] args)
         {
+            TaskbarIdentity.Initialize();
             var app = new Application { ShutdownMode = ShutdownMode.OnMainWindowClose };
             app.DispatcherUnhandledException += delegate(object sender, System.Windows.Threading.DispatcherUnhandledExceptionEventArgs e)
             {

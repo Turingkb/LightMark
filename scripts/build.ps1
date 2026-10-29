@@ -2,7 +2,7 @@ param([switch]$Offline)
 $ErrorActionPreference = 'Stop'
 $projectDir = Split-Path $PSScriptRoot -Parent
 $cacheDir = Join-Path $projectDir '.cache'
-$outputDir = Join-Path $projectDir 'dist\LightMark-1.0.1'
+$outputDir = Join-Path $projectDir 'dist\LightMark-1.0.2'
 $compiler = Join-Path $env:WINDIR 'Microsoft.NET\Framework64\v4.0.30319\csc.exe'
 $frameworkDir = Split-Path $compiler -Parent
 New-Item -ItemType Directory -Path $cacheDir, $outputDir -Force | Out-Null
@@ -43,5 +43,5 @@ Copy-Item (Join-Path $projectDir 'README.md'), (Join-Path $projectDir 'THIRD-PAR
 Copy-Item (Join-Path $projectDir 'scripts\unregister.ps1') -Destination $outputDir
 $commit = & git -C $projectDir rev-parse --short HEAD 2>$null
 if ($LASTEXITCODE -ne 0) { $commit = 'uncommitted' }
-[PSCustomObject]@{ version = '1.0.1'; sourceCommit = $commit; sha256 = (Get-FileHash (Join-Path $outputDir 'LightMark.exe') -Algorithm SHA256).Hash; builtAtUtc = [DateTime]::UtcNow.ToString('o') } | ConvertTo-Json | Set-Content (Join-Path $outputDir 'build-info.json') -Encoding utf8
+[PSCustomObject]@{ version = '1.0.2'; sourceCommit = $commit; sha256 = (Get-FileHash (Join-Path $outputDir 'LightMark.exe') -Algorithm SHA256).Hash; builtAtUtc = [DateTime]::UtcNow.ToString('o') } | ConvertTo-Json | Set-Content (Join-Path $outputDir 'build-info.json') -Encoding utf8
 Write-Output "已构建：$outputDir\LightMark.exe"

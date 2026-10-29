@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Documents;
@@ -17,6 +18,8 @@ namespace LightMark
     {
         private static int passed;
         private static string directory;
+        [DllImport("shell32.dll")]
+        private static extern int GetCurrentProcessExplicitAppUserModelID(out IntPtr appId);
         [STAThread]
         private static int Main(string[] args)
         {
@@ -25,6 +28,11 @@ namespace LightMark
             Environment.SetEnvironmentVariable("LIGHTMARK_DATA_DIR", Path.Combine(directory, "state"));
             try
             {
+                TaskbarIdentity.Initialize();
+                IntPtr taskbarId;
+                Marshal.ThrowExceptionForHR(GetCurrentProcessExplicitAppUserModelID(out taskbarId));
+                try { Check(Marshal.PtrToStringUni(taskbarId) == "Turingkb.LightMark", "Windows receives the stable process taskbar grouping identity"); }
+                finally { Marshal.FreeCoTaskMem(taskbarId); }
                 RoundTrip(new UTF8Encoding(false, true), "UTF8", "\n");
                 RoundTrip(new UTF8Encoding(true, true), "UTF8-BOM", "\r\n");
                 RoundTrip(new UnicodeEncoding(false, true, true), "UTF16-LE", "\r\n");

@@ -110,7 +110,7 @@ namespace LightMark
             Get<TextBox>("FindText").KeyDown += delegate(object sender, KeyEventArgs e) { if (e.Key == Key.Enter) { Find((Keyboard.Modifiers & ModifierKeys.Shift) != 0); e.Handled = true; } };
             Click("WelcomeMenu", delegate { if (ConfirmDiscard()) { SetContent(WelcomeText(), new DocumentFile()); SetMode(3); } });
             Click("LicensesMenu", ShowLicenses);
-            Click("AboutMenu", delegate { MessageBox.Show(this, "LightMark 1.0.1\n\n原生 Windows Markdown 编辑器\n本地编辑 · 离线预览 · 便携运行\n\n快捷键：Ctrl+1 编辑 / Ctrl+2 分栏 / Ctrl+3 阅读\n支持 CommonMark、表格、任务列表和本地图片。\nHTML 按源码显示，数学公式和 Mermaid 按原文显示。\n\nMarkdown 解析：Markdig 1.5.0 (BSD-2-Clause)", "关于 LightMark", MessageBoxButton.OK, MessageBoxImage.Information); });
+            Click("AboutMenu", delegate { MessageBox.Show(this, "LightMark 1.0.2\n\n原生 Windows Markdown 编辑器\n本地编辑 · 离线预览 · 便携运行\n\n快捷键：Ctrl+1 编辑 / Ctrl+2 分栏 / Ctrl+3 阅读\n支持 CommonMark、表格、任务列表和本地图片。\nHTML 按源码显示，数学公式和 Mermaid 按原文显示。\n\nMarkdown 解析：Markdig 1.5.0 (BSD-2-Clause)", "关于 LightMark", MessageBoxButton.OK, MessageBoxImage.Information); });
         }
 
         private void WindowKeyDown(object sender, KeyEventArgs e)
