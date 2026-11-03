@@ -41,7 +41,7 @@ namespace LightMark
                 RoundTrip(new UTF32Encoding(false, true, true), "UTF32-LE", "\n");
                 RoundTrip(new UTF32Encoding(true, true, true), "UTF32-BE", "\r\n");
                 RoundTrip(Encoding.GetEncoding(54936, EncoderFallback.ExceptionFallback, DecoderFallback.ExceptionFallback), "GB18030", "\r\n");
-                ConflictSafety(); NewFile(); FailedSave(); RejectInvalid(); Render(); RenderMath(); OutlineHierarchy(); XamlLayout(); WindowCommands();
+                ConflictSafety(); NewFile(); FailedSave(); RejectInvalid(); Render(); RenderMath(); OutlineHierarchy(); ThemeModes(); XamlLayout(); WindowCommands();
                 Console.WriteLine("PASS: " + passed + " assertions");
                 return 0;
             }
@@ -145,6 +145,53 @@ namespace LightMark
             var bitmap = new RenderTargetBitmap(1000, 760, 96, 96, PixelFormats.Pbgra32); bitmap.Render(viewer);
             var encoder = new PngBitmapEncoder(); encoder.Frames.Add(BitmapFrame.Create(bitmap));
             using (var output = File.Create(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "math-preview.png"))) encoder.Save(output);
+        }
+        private static void ThemeModes()
+        {
+            string previous = Environment.GetEnvironmentVariable("LIGHTMARK_DATA_DIR");
+            string isolated = Path.Combine(directory, "themes");
+            Environment.SetEnvironmentVariable("LIGHTMARK_DATA_DIR", isolated);
+            try
+            {
+                Check(new LocalState().DarkTheme, "fresh settings default to dark");
+                Directory.CreateDirectory(isolated);
+                File.WriteAllText(Path.Combine(isolated, "settings.xml"), "<settings width='1240' height='820' fontSize='15'/>");
+                Check(new LocalState().DarkTheme, "settings from earlier versions default to dark");
+                string path = Path.Combine(directory, "theme-sample.md");
+                File.WriteAllText(path, "# 两种模式\n\n行内公式 $E=mc^2$。\n\n```python\nprint('hello')\n```\n\n> 阅读与编辑均随主题切换。\n\n| A | B |\n|---|---|\n| 1 | 2 |\n\n$$\n\\frac{1}{2} + \\sqrt{x}\n$$\n");
+                var window = new MainWindow(new string[] { path }); window.RaiseEvent(new RoutedEventArgs(FrameworkElement.LoadedEvent));
+                var root = (Grid)window.Content;
+                var editor = (TextBox)root.FindName("Editor"); var preview = (FlowDocumentScrollViewer)root.FindName("Preview");
+                root.Measure(new Size(1240, 780)); root.Arrange(new Rect(0, 0, 1240, 780)); root.UpdateLayout(); Pump(600);
+                Check(((SolidColorBrush)root.Background).Color == Color.FromRgb(21,26,34), "initial window uses dark palette");
+                Check(((SolidColorBrush)preview.Document.Background).Color == Color.FromRgb(25,31,40), "initial preview uses dark surface");
+                var inlineImage = preview.Document.Blocks.OfType<Paragraph>().SelectMany(p => p.Inlines.OfType<InlineUIContainer>()).Select(i => i.Child).OfType<Image>().Single();
+                var geometry = (GeometryDrawing)((DrawingImage)inlineImage.Source).Drawing;
+                Check(((SolidColorBrush)geometry.Brush).Color == Color.FromRgb(226,232,240), "dark formula geometry uses readable light ink");
+                string original = editor.Text; string title = window.Title;
+                Screenshot(root, "theme-dark.png");
+                ((MenuItem)root.FindName("LightThemeMenu")).RaiseEvent(new RoutedEventArgs(MenuItem.ClickEvent)); Pump(600); root.UpdateLayout();
+                Check(!new LocalState().DarkTheme, "light selection is immediately persisted");
+                Check(((SolidColorBrush)preview.Document.Background).Color == Colors.White, "theme switch regenerates light preview");
+                Check(((MenuItem)root.FindName("LightThemeMenu")).IsChecked && !((MenuItem)root.FindName("DarkThemeMenu")).IsChecked, "appearance menu selection is mutually exclusive");
+                Check(editor.Text == original && window.Title == title, "theme changes preserve document content and dirty state");
+                Screenshot(root, "theme-light.png");
+                var reopened = new MainWindow(new string[0]);
+                Check(((SolidColorBrush)((Grid)reopened.Content).Background).Color == Color.FromRgb(247,249,251), "new window restores saved light mode");
+                ((Button)root.FindName("ThemeButton")).RaiseEvent(new RoutedEventArgs(Button.ClickEvent)); Pump(600);
+                Check(new LocalState().DarkTheme && ((MenuItem)root.FindName("DarkThemeMenu")).IsChecked, "toolbar toggle restores and saves dark mode");
+                ((Button)root.FindName("SplitButton")).RaiseEvent(new RoutedEventArgs(Button.ClickEvent)); root.UpdateLayout();
+                Check(((SolidColorBrush)editor.Foreground).Color == Color.FromRgb(226,232,240) && ((SolidColorBrush)editor.Background).Color == Color.FromRgb(22,28,37), "source editor and caret palette follow dark mode");
+                Screenshot(root, "theme-dark-split.png");
+            }
+            finally { Environment.SetEnvironmentVariable("LIGHTMARK_DATA_DIR", previous); }
+        }
+        private static void Screenshot(Grid root, string filename)
+        {
+            root.UpdateLayout();
+            var bitmap = new RenderTargetBitmap(1240, 780, 96, 96, PixelFormats.Pbgra32); bitmap.Render(root);
+            var encoder = new PngBitmapEncoder(); encoder.Frames.Add(BitmapFrame.Create(bitmap));
+            using (var output = File.Create(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, filename))) encoder.Save(output);
         }
         private static void XamlLayout()
         {

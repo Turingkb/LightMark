@@ -22,6 +22,7 @@ namespace LightMark
         internal double Width = 1240;
         internal double Height = 820;
         internal double FontSize = 15;
+        internal bool DarkTheme = true;
         internal string Warning;
 
         internal LocalState()
@@ -31,6 +32,7 @@ namespace LightMark
             try
             {
                 var root = XDocument.Load(path).Root;
+                DarkTheme = (string)root.Attribute("theme") != "light";
                 double value;
                 if (double.TryParse((string)root.Attribute("width"), out value)) Width = Math.Max(860, Math.Min(3000, value));
                 if (double.TryParse((string)root.Attribute("height"), out value)) Height = Math.Max(540, Math.Min(2000, value));
@@ -49,7 +51,7 @@ namespace LightMark
         internal void Save()
         {
             Directory.CreateDirectory(DirectoryName);
-            var root = new XElement("settings", new XAttribute("width", Width), new XAttribute("height", Height), new XAttribute("fontSize", FontSize), Recent.Select(p => new XElement("recent", p)));
+            var root = new XElement("settings", new XAttribute("width", Width), new XAttribute("height", Height), new XAttribute("fontSize", FontSize), new XAttribute("theme", DarkTheme ? "dark" : "light"), Recent.Select(p => new XElement("recent", p)));
             string path = Path.Combine(DirectoryName, "settings.xml");
             string temporary = path + "." + Guid.NewGuid().ToString("N") + ".tmp";
             try { new XDocument(root).Save(temporary); if (File.Exists(path)) File.Replace(temporary, path, null); else File.Move(temporary, path); }

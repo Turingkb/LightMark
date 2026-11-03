@@ -40,6 +40,8 @@ namespace LightMark
         private int mode = 3;
         private MarkdownView rendered;
         private double scrollRatio;
+        private AppTheme theme;
+        private double? themeScrollRatio;
 
         internal MainWindow(string[] args)
         {
@@ -78,6 +80,8 @@ namespace LightMark
                 else if (settings.Warning != null) Status(settings.Warning);
             };
             SetMode(3);
+            ApplyTheme(settings.DarkTheme, false);
+            SourceInitialized += delegate { theme.ApplyTitleBar(this); };
         }
 
         private T Get<T>(string name) where T : class { return (T)root.FindName(name); }
@@ -110,7 +114,10 @@ namespace LightMark
             Get<TextBox>("FindText").KeyDown += delegate(object sender, KeyEventArgs e) { if (e.Key == Key.Enter) { Find((Keyboard.Modifiers & ModifierKeys.Shift) != 0); e.Handled = true; } };
             Click("WelcomeMenu", delegate { if (ConfirmDiscard()) { SetContent(WelcomeText(), new DocumentFile()); SetMode(3); } });
             Click("LicensesMenu", ShowLicenses);
-            Click("AboutMenu", delegate { MessageBox.Show(this, "LightMark 1.0.3\n\n原生 Windows Markdown 编辑器\n本地编辑 · 离线预览 · 便携运行\n\n快捷键：Ctrl+1 编辑 / Ctrl+2 分栏 / Ctrl+3 阅读\n支持 CommonMark、表格、任务列表和本地图片。\nHTML 按源码显示，数学公式离线排版，Mermaid 按原文显示。\n\nMarkdown 解析：Markdig 1.5.0 (BSD-2-Clause)", "关于 LightMark", MessageBoxButton.OK, MessageBoxImage.Information); });
+            Click("DarkThemeMenu", delegate { ApplyTheme(true, true); });
+            Click("LightThemeMenu", delegate { ApplyTheme(false, true); });
+            Click("ThemeButton", delegate { ApplyTheme(!settings.DarkTheme, true); });
+            Click("AboutMenu", delegate { MessageBox.Show(this, "LightMark 1.0.4\n\n原生 Windows Markdown 编辑器\n本地编辑 · 离线预览 · 便携运行\n\n快捷键：Ctrl+1 编辑 / Ctrl+2 分栏 / Ctrl+3 阅读\n支持 CommonMark、表格、任务列表和本地图片。\nHTML 按源码显示，数学公式离线排版，Mermaid 按原文显示。\n\nMarkdown 解析：Markdig 1.5.0 (BSD-2-Clause)", "关于 LightMark", MessageBoxButton.OK, MessageBoxImage.Information); });
         }
 
         private void WindowKeyDown(object sender, KeyEventArgs e)
@@ -247,10 +254,14 @@ namespace LightMark
             {
                 var markdown = await Task.Run(delegate { return Markdown.Parse(text, MarkdownView.Pipeline); });
                 if (closed || requestedVersion != version) { renderAgain = true; return; }
-                var view = new MarkdownView(document.PathName); view.LinkClicked = OpenLink;
+                var view = new MarkdownView(document.PathName, settings.DarkTheme); view.LinkClicked = OpenLink;
                 preview.Document = view.Render(markdown, truncated); rendered = view;
                 OutlineTree.Populate(outline, view.Outline);
-                await Dispatcher.InvokeAsync(new Action(delegate { SyncPreviewScroll(); }), DispatcherPriority.Background);
+                await Dispatcher.InvokeAsync(new Action(delegate {
+                    var scroll = FindChild<ScrollViewer>(preview);
+                    if (themeScrollRatio.HasValue && scroll != null) { scroll.ScrollToVerticalOffset(themeScrollRatio.Value * scroll.ScrollableHeight); themeScrollRatio = null; }
+                    else SyncPreviewScroll();
+                }), DispatcherPriority.Background);
             }
             catch (Exception ex) { Status("预览暂不可用，源码仍可编辑：" + ex.Message); }
             finally { parsing = false; if (renderAgain && !closed) { renderAgain = false; QueuePreview(); } }
@@ -284,12 +295,26 @@ namespace LightMark
             Get<FrameworkElement>("PreviewPane").Visibility = value == 1 ? Visibility.Collapsed : Visibility.Visible;
             Get<FrameworkElement>("Divider").Visibility = value == 2 ? Visibility.Visible : Visibility.Collapsed;
             foreach (string name in new string[] { "Edit", "Split", "Read" }) Get<Button>(name + "Button").Background = Brushes.Transparent;
-            Get<Button>((value == 1 ? "Edit" : value == 2 ? "Split" : "Read") + "Button").Background = Brushes.White;
+            Get<Button>((value == 1 ? "Edit" : value == 2 ? "Split" : "Read") + "Button").SetResourceReference(Control.BackgroundProperty, AppTheme.Key("#FFFFFF"));
             Get<FrameworkElement>("FormattingTools").Visibility = value == 3 ? Visibility.Collapsed : Visibility.Visible;
             UpdateStatistics();
             FocusDocument();
         }
         private void FocusDocument() { if (mode == 3) preview.Focus(); else editor.Focus(); }
+        private void ApplyTheme(bool dark, bool persist)
+        {
+            var scroll = FindChild<ScrollViewer>(preview);
+            if (scroll != null) themeScrollRatio = scroll.ScrollableHeight > 0 ? scroll.VerticalOffset / scroll.ScrollableHeight : 0;
+            settings.DarkTheme = dark; theme = new AppTheme(dark); theme.Apply(root);
+            Background = theme.BrushFor("#FFFFFF"); theme.ApplyTitleBar(this);
+            Get<MenuItem>("DarkThemeMenu").IsChecked = dark; Get<MenuItem>("LightThemeMenu").IsChecked = !dark;
+            Get<Button>("ThemeButton").Content = dark ? "浅色模式" : "深色模式";
+            version++; QueuePreview();
+            if (persist)
+            {
+                try { settings.Save(); } catch (Exception ex) { Status("主题已切换，但偏好未保存：" + ex.Message); }
+            }
+        }
 
         private void EditorScrolled(object sender, ScrollChangedEventArgs e)
         {
@@ -434,6 +459,10 @@ namespace LightMark
             string text;
             using (var stream = typeof(MainWindow).Assembly.GetManifestResourceStream("LightMark.ThirdParty.txt")) using (var reader = new StreamReader(stream)) text = reader.ReadToEnd();
             var licenseWindow = new Window { Owner = this, Title = "第三方许可证", Width = 760, Height = 520, WindowStartupLocation = WindowStartupLocation.CenterOwner, Content = new TextBox { Text = text, IsReadOnly = true, TextWrapping = TextWrapping.Wrap, VerticalScrollBarVisibility = ScrollBarVisibility.Auto, Padding = new Thickness(20), BorderThickness = new Thickness(0), FontSize = 13 } };
+            theme.Apply(licenseWindow);
+            ((TextBox)licenseWindow.Content).Background = theme.BrushFor("#FFFFFF");
+            ((TextBox)licenseWindow.Content).Foreground = theme.BrushFor("#263348");
+            licenseWindow.SourceInitialized += delegate { theme.ApplyTitleBar(licenseWindow); };
             licenseWindow.ShowDialog();
         }
         private void Launch(string target) { try { Process.Start(new ProcessStartInfo(target) { UseShellExecute = true }); } catch (Exception ex) { Error("无法打开", ex); } }
