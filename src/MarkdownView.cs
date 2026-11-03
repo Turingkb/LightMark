@@ -39,16 +39,17 @@ namespace LightMark
         private int blockCount;
         private int inlineCount;
         private int mathCount;
-        private readonly Brush ink = BrushOf("#263348");
-        private readonly Brush muted = BrushOf("#68768B");
-        private readonly Brush accent = BrushOf("#28766D");
+        private readonly AppTheme theme;
+        private readonly Brush ink;
+        private readonly Brush muted;
+        private readonly Brush accent;
 
-        internal MarkdownView(string path) { directory = path == null ? null : Path.GetDirectoryName(path); }
+        internal MarkdownView(string path, bool dark = true) { directory = path == null ? null : Path.GetDirectoryName(path); theme = new AppTheme(dark); ink = BrushOf("#263348"); muted = BrushOf("#68768B"); accent = BrushOf("#28766D"); }
 
         internal FlowDocument Render(MarkdownDocument markdown, bool truncated)
         {
             Outline.Clear(); blockCount = 0; inlineCount = 0; mathCount = 0;
-            var document = new FlowDocument { FontFamily = new FontFamily("Segoe UI, Microsoft YaHei UI"), FontSize = 16, Foreground = ink, Background = Brushes.White, PagePadding = new Thickness(36, 24, 36, 40), ColumnWidth = double.PositiveInfinity, LineHeight = 27 };
+            var document = new FlowDocument { FontFamily = new FontFamily("Segoe UI, Microsoft YaHei UI"), FontSize = 16, Foreground = ink, Background = BrushOf("#FFFFFF"), PagePadding = new Thickness(36, 24, 36, 40), ColumnWidth = double.PositiveInfinity, LineHeight = 27 };
             if (truncated) document.Blocks.Add(new Paragraph(new Run("预览显示前 150,000 个字符，保存仍包含完整内容。")) { Foreground = muted, FontSize = 13 });
             foreach (MdBlock block in markdown) { if (blockCount >= 3000) break; document.Blocks.Add(ConvertBlock(block, 0)); }
             if (blockCount >= 3000) document.Blocks.Add(new Paragraph(new Run("[预览节点数量已达上限，保存仍保留完整源码]")) { Foreground = muted });
@@ -116,7 +117,7 @@ namespace LightMark
                 {
                     if (++blockCount >= 3000) break;
                     var row = (Markdig.Extensions.Tables.TableRow)child;
-                    var wpfRow = new System.Windows.Documents.TableRow { Background = row.IsHeader ? BrushOf("#F0F5F4") : Brushes.White, FontWeight = row.IsHeader ? FontWeights.SemiBold : FontWeights.Normal };
+                    var wpfRow = new System.Windows.Documents.TableRow { Background = row.IsHeader ? BrushOf("#F0F5F4") : BrushOf("#FFFFFF"), FontWeight = row.IsHeader ? FontWeights.SemiBold : FontWeights.Normal };
                     foreach (MdBlock cellBlock in row)
                     {
                         if (++blockCount >= 3000) break;
@@ -216,7 +217,7 @@ namespace LightMark
         }
         private FrameworkElement Formula(string source, bool display)
         {
-            return ++mathCount > 128 ? MathView.Fallback(source, "单次预览最多排版 128 个公式") : MathView.Create(source, display);
+            return ++mathCount > 128 ? MathView.Fallback(source, "单次预览最多排版 128 个公式", BrushOf("#8B0000")) : MathView.Create(source, display, ink, BrushOf("#8B0000"));
         }
 
         internal static string LocalPath(string directory, string url)
@@ -248,6 +249,6 @@ namespace LightMark
             }
             return text.ToString();
         }
-        private static Brush BrushOf(string color) { var brush = (SolidColorBrush)new BrushConverter().ConvertFromString(color); brush.Freeze(); return brush; }
+        private Brush BrushOf(string color) { return theme.BrushFor(color); }
     }
 }
