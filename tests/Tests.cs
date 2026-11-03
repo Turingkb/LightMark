@@ -23,6 +23,7 @@ namespace LightMark
         [STAThread]
         private static int Main(string[] args)
         {
+            AppDomain.CurrentDomain.AssemblyResolve += Program.ResolveEmbedded;
             directory = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "fixtures-" + Guid.NewGuid().ToString("N"));
             Directory.CreateDirectory(directory);
             Environment.SetEnvironmentVariable("LIGHTMARK_DATA_DIR", Path.Combine(directory, "state"));
@@ -40,7 +41,7 @@ namespace LightMark
                 RoundTrip(new UTF32Encoding(false, true, true), "UTF32-LE", "\n");
                 RoundTrip(new UTF32Encoding(true, true, true), "UTF32-BE", "\r\n");
                 RoundTrip(Encoding.GetEncoding(54936, EncoderFallback.ExceptionFallback, DecoderFallback.ExceptionFallback), "GB18030", "\r\n");
-                ConflictSafety(); NewFile(); FailedSave(); RejectInvalid(); Render(); OutlineHierarchy(); XamlLayout(); WindowCommands();
+                ConflictSafety(); NewFile(); FailedSave(); RejectInvalid(); Render(); RenderMath(); OutlineHierarchy(); XamlLayout(); WindowCommands();
                 Console.WriteLine("PASS: " + passed + " assertions");
                 return 0;
             }
@@ -123,6 +124,27 @@ namespace LightMark
             string many = string.Concat(Enumerable.Repeat("paragraph\n\n", 3500));
             var bounded = new MarkdownView(null).Render(Markdown.Parse(many, MarkdownView.Pipeline), false);
             Check(bounded.Blocks.Count <= 3001 && new TextRange(bounded.ContentStart, bounded.ContentEnd).Text.Contains("节点数量已达上限"), "many short blocks obey actual preview node budget");
+        }
+        private static void RenderMath()
+        {
+            foreach (string formula in new string[] { @"E=mc^2", @"\frac{-b\pm\sqrt{b^2-4ac}}{2a}", @"\sum_{i=1}^{n}x_i", @"\int_0^1 x^2\,dx", @"\alpha+\beta=\gamma", @"\begin{pmatrix}a&b\\c&d\end{pmatrix}" })
+            {
+                var rendered = MathView.Create(formula, true);
+                Check(rendered is Image && rendered.Width > 0 && rendered.Height > 0, "native math geometry: " + formula);
+            }
+            Check(MathView.Create(@"\notARealCommand{x}", true) is TextBlock, "unsupported math falls back to visible source");
+            Check(MathView.Create(new string('x', 4097), true) is TextBlock, "oversized formula falls back before parsing");
+            Check(MathView.Create(new string('{', 50) + "x" + new string('}', 50), true) is TextBlock, "deeply nested math is bounded");
+            string sample = "# 公式排版\n\n行内公式 $E=mc^2$ 与上下标 $x_i^2$，普通中文正常显示。\n\n## 分式与根号\n\n$$\n\\frac{-b\\pm\\sqrt{b^2-4ac}}{2a}\n$$\n\n## 求和与积分\n\n$$\n\\sum_{i=1}^{n}x_i = \\int_0^1 x^2\\,dx\n$$\n\n## 矩阵\n\n$$\n\\begin{pmatrix}a&b\\\\c&d\\end{pmatrix}\n$$\n\n代码中的公式保持原文：`$x_i$`。\n";
+            var doc = new MarkdownView(null).Render(Markdown.Parse(sample, MarkdownView.Pipeline), false);
+            Check(doc.Blocks.OfType<BlockUIContainer>().Count() == 3, "display dollar math becomes native formula blocks");
+            Check(doc.Blocks.OfType<Paragraph>().SelectMany(p => p.Inlines.OfType<InlineUIContainer>()).Count() == 2, "inline dollar math stays within its paragraph");
+            Check(new TextRange(doc.ContentStart, doc.ContentEnd).Text.Contains("$x_i$"), "code-span dollar text is never rendered as math");
+            var viewer = new FlowDocumentScrollViewer { Document = doc, IsToolBarVisible = false, Background = Brushes.White };
+            viewer.Measure(new Size(1000, 760)); viewer.Arrange(new Rect(0, 0, 1000, 760)); viewer.UpdateLayout();
+            var bitmap = new RenderTargetBitmap(1000, 760, 96, 96, PixelFormats.Pbgra32); bitmap.Render(viewer);
+            var encoder = new PngBitmapEncoder(); encoder.Frames.Add(BitmapFrame.Create(bitmap));
+            using (var output = File.Create(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "math-preview.png"))) encoder.Save(output);
         }
         private static void XamlLayout()
         {

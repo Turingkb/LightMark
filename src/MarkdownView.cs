@@ -12,6 +12,7 @@ using Markdig.Syntax;
 using Markdig.Syntax.Inlines;
 using Markdig.Extensions.Tables;
 using Markdig.Extensions.TaskLists;
+using Markdig.Extensions.Mathematics;
 using WpfBlock = System.Windows.Documents.Block;
 using WpfInline = System.Windows.Documents.Inline;
 using MdBlock = Markdig.Syntax.Block;
@@ -31,12 +32,13 @@ namespace LightMark
     internal sealed class MarkdownView
     {
         internal const int PreviewLimit = 150000;
-        internal static readonly MarkdownPipeline Pipeline = new MarkdownPipelineBuilder().UsePipeTables().UseTaskLists().UseEmphasisExtras().UseAutoLinks().Build();
+        internal static readonly MarkdownPipeline Pipeline = new MarkdownPipelineBuilder().UsePipeTables().UseTaskLists().UseEmphasisExtras().UseAutoLinks().UseMathematics().Build();
         internal readonly List<OutlineEntry> Outline = new List<OutlineEntry>();
         internal Action<string> LinkClicked;
         private readonly string directory;
         private int blockCount;
         private int inlineCount;
+        private int mathCount;
         private readonly Brush ink = BrushOf("#263348");
         private readonly Brush muted = BrushOf("#68768B");
         private readonly Brush accent = BrushOf("#28766D");
@@ -45,7 +47,7 @@ namespace LightMark
 
         internal FlowDocument Render(MarkdownDocument markdown, bool truncated)
         {
-            Outline.Clear(); blockCount = 0; inlineCount = 0;
+            Outline.Clear(); blockCount = 0; inlineCount = 0; mathCount = 0;
             var document = new FlowDocument { FontFamily = new FontFamily("Segoe UI, Microsoft YaHei UI"), FontSize = 16, Foreground = ink, Background = Brushes.White, PagePadding = new Thickness(36, 24, 36, 40), ColumnWidth = double.PositiveInfinity, LineHeight = 27 };
             if (truncated) document.Blocks.Add(new Paragraph(new Run("预览显示前 150,000 个字符，保存仍包含完整内容。")) { Foreground = muted, FontSize = 13 });
             foreach (MdBlock block in markdown) { if (blockCount >= 3000) break; document.Blocks.Add(ConvertBlock(block, 0)); }
@@ -56,6 +58,11 @@ namespace LightMark
         private WpfBlock ConvertBlock(MdBlock block, int depth)
         {
             if (++blockCount > 3000 || depth > 32) return new Paragraph(new Run("[内容过多，已省略部分预览]"));
+            var math = block as MathBlock;
+            if (math != null)
+            {
+                return new BlockUIContainer(new ScrollViewer { Content = Formula(math.Lines.ToString(), true), HorizontalScrollBarVisibility = ScrollBarVisibility.Auto, VerticalScrollBarVisibility = ScrollBarVisibility.Disabled, HorizontalContentAlignment = HorizontalAlignment.Center, Padding = new Thickness(8) }) { Margin = new Thickness(0, 10, 0, 16) };
+            }
             var heading = block as HeadingBlock;
             if (heading != null)
             {
@@ -144,6 +151,8 @@ namespace LightMark
             foreach (Markdig.Syntax.Inlines.Inline inline in source)
             {
                 if (++inlineCount > 30000) return;
+                var math = inline as MathInline;
+                if (math != null) { target.Add(new InlineUIContainer(Formula(math.Content.ToString(), math.DelimiterCount > 1)) { BaselineAlignment = BaselineAlignment.Center }); continue; }
                 var literal = inline as LiteralInline;
                 if (literal != null) { target.Add(new Run(literal.Content.ToString())); continue; }
                 var code = inline as CodeInline;
@@ -204,6 +213,10 @@ namespace LightMark
                 catch (ArgumentException) { }
             }
             target.Add(new Run("[图片：" + (label.Length == 0 ? link.Url : label) + "]") { Foreground = muted });
+        }
+        private FrameworkElement Formula(string source, bool display)
+        {
+            return ++mathCount > 128 ? MathView.Fallback(source, "单次预览最多排版 128 个公式") : MathView.Create(source, display);
         }
 
         internal static string LocalPath(string directory, string url)

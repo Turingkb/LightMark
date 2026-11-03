@@ -8,13 +8,17 @@ $frameworkDir = Split-Path $compiler -Parent
 $references = @('System.dll', 'System.Core.dll', 'System.Xml.dll', 'System.Xml.Linq.dll', 'System.Xaml.dll')
 foreach ($name in @('WindowsBase.dll', 'PresentationCore.dll', 'PresentationFramework.dll')) { $references += Join-Path $frameworkDir "WPF\$name" }
 $packages = Get-Content (Join-Path $projectDir 'dependencies.json') -Raw | ConvertFrom-Json
+$embedded = @()
 foreach ($package in $packages) {
     $dll = Join-Path $projectDir ('.cache\' + $package.cache + '\lib\net462\' + $package.assembly)
     $references += $dll
-    Copy-Item -LiteralPath $dll -Destination $testDir
+    $embedded += '/resource:' + $dll + ',Dependencies.' + $package.assembly
+    $oldCopy = Join-Path $testDir $package.assembly
+    if (Test-Path -LiteralPath $oldCopy) { Remove-Item -LiteralPath $oldCopy }
 }
 $arguments = @('/nologo', '/target:exe', '/main:LightMark.Tests', '/warn:4', '/warnaserror+', '/utf8output', '/codepage:65001', ('/out:' + (Join-Path $testDir 'Tests.exe')))
 $arguments += $references | ForEach-Object { '/reference:' + $_ }
+$arguments += $embedded
 $arguments += '/resource:' + (Join-Path $projectDir 'src\MainWindow.xaml') + ',LightMark.MainWindow.xaml'
 $arguments += '/resource:' + (Join-Path $projectDir 'Welcome.md') + ',LightMark.Welcome.md'
 $arguments += '/resource:' + (Join-Path $projectDir 'THIRD-PARTY-NOTICES.md') + ',LightMark.ThirdParty.txt'

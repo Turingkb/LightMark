@@ -1,7 +1,58 @@
 [
-  { "id": "Markdig", "version": "1.5.0", "cache": "markdig", "sha256": "00D13218676F9508CB75FDFE3A3632DEEF97AEA32FC26310CAF508539AC4D9CD", "assembly": "Markdig.dll", "license": "BSD-2-Clause" },
-  { "id": "System.Memory", "version": "4.6.3", "cache": "memory", "sha256": "26078AEB758C9AE985E8BF851F973026061DA6A5EB4837204D0C2D2204C72955", "assembly": "System.Memory.dll", "license": "MIT" },
-  { "id": "System.Buffers", "version": "4.6.1", "cache": "system.buffers", "sha256": "B00451E91D016FBEC091AD1E361F3A7015E1D91D4047F7E48A74455B2A673D79", "assembly": "System.Buffers.dll", "license": "MIT" },
-  { "id": "System.Numerics.Vectors", "version": "4.6.1", "cache": "system.numerics.vectors", "sha256": "2BC500A86DCB02F2032D6D877F9E2D6E9E4A79080E57239B4198679D4031F2C7", "assembly": "System.Numerics.Vectors.dll", "license": "MIT" },
-  { "id": "System.Runtime.CompilerServices.Unsafe", "version": "6.1.2", "cache": "system.runtime.compilerservices.unsafe", "sha256": "5F6A7F53AF3465F92BEB6DA873EBE0E496206C313313B98BADEE4355A6B25937", "assembly": "System.Runtime.CompilerServices.Unsafe.dll", "license": "MIT" }
+  {
+    "id": "Markdig",
+    "version": "1.5.0",
+    "cache": "markdig",
+    "sha256": "00D13218676F9508CB75FDFE3A3632DEEF97AEA32FC26310CAF508539AC4D9CD",
+    "assembly": "Markdig.dll",
+    "license": "BSD-2-Clause"
+  },
+  {
+    "id": "System.Memory",
+    "version": "4.6.3",
+    "cache": "memory",
+    "sha256": "26078AEB758C9AE985E8BF851F973026061DA6A5EB4837204D0C2D2204C72955",
+    "assembly": "System.Memory.dll",
+    "license": "MIT"
+  },
+  {
+    "id": "System.Buffers",
+    "version": "4.6.1",
+    "cache": "system.buffers",
+    "sha256": "B00451E91D016FBEC091AD1E361F3A7015E1D91D4047F7E48A74455B2A673D79",
+    "assembly": "System.Buffers.dll",
+    "license": "MIT"
+  },
+  {
+    "id": "System.Numerics.Vectors",
+    "version": "4.6.1",
+    "cache": "system.numerics.vectors",
+    "sha256": "2BC500A86DCB02F2032D6D877F9E2D6E9E4A79080E57239B4198679D4031F2C7",
+    "assembly": "System.Numerics.Vectors.dll",
+    "license": "MIT"
+  },
+  {
+    "id": "System.Runtime.CompilerServices.Unsafe",
+    "version": "6.1.2",
+    "cache": "system.runtime.compilerservices.unsafe",
+    "sha256": "5F6A7F53AF3465F92BEB6DA873EBE0E496206C313313B98BADEE4355A6B25937",
+    "assembly": "System.Runtime.CompilerServices.Unsafe.dll",
+    "license": "MIT"
+  },
+  {
+    "id": "WpfMath",
+    "version": "2.1.0",
+    "cache": "wpfmath",
+    "sha256": "37622FA45D0DD18A312744EED4DA8BF55A7B297606BE87169C2BEDB443EB7BAD",
+    "assembly": "WpfMath.dll",
+    "license": "MIT AND OFL-1.1 AND Knuth"
+  },
+  {
+    "id": "XamlMath.Shared",
+    "version": "2.1.0",
+    "cache": "xamlmath.shared",
+    "sha256": "E64A64E7A1827B8186C79A78CAC50CF118A02009341E109A89C02808F5D5BC8F",
+    "assembly": "XamlMath.Shared.dll",
+    "license": "MIT"
+  }
 ]

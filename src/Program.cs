@@ -6,8 +6,8 @@ using System.Windows;
 
 [assembly: AssemblyTitle("LightMark")]
 [assembly: AssemblyDescription("轻量 Markdown 编辑器")]
-[assembly: AssemblyVersion("1.0.2.0")]
-[assembly: AssemblyFileVersion("1.0.2.0")]
+[assembly: AssemblyVersion("1.0.3.0")]
+[assembly: AssemblyFileVersion("1.0.3.0")]
 
 namespace LightMark
 {
@@ -21,7 +21,7 @@ namespace LightMark
             catch (Exception ex) { MessageBox.Show("LightMark 启动失败：\n" + ex.Message, "LightMark", MessageBoxButton.OK, MessageBoxImage.Error); }
         }
 
-        private static Assembly ResolveEmbedded(object sender, ResolveEventArgs args)
+        internal static Assembly ResolveEmbedded(object sender, ResolveEventArgs args)
         {
             string name = new AssemblyName(args.Name).Name;
             using (Stream stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("Dependencies." + name + ".dll"))
